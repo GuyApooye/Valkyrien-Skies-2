@@ -23,7 +23,7 @@ import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import org.valkyrienskies.mod.mixinducks.mod_compat.create.IExtendedAirCurrentSource;
 
-@Mixin(AirFlowParticle.class)
+@Mixin(value = AirFlowParticle.class,remap = false)
 public abstract class MixinAirFlowParticle extends SimpleAnimatedParticle {
 
     @Shadow

@@ -12,7 +12,7 @@ import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
 import org.valkyrienskies.mod.mixin.server.MinecraftServerAccessor;
 import org.valkyrienskies.mod.mixinducks.mod_compat.bluemap.WorldDuck;
 
-@Mixin(MCAWorld.class)
+@Mixin(value = MCAWorld.class,remap = false)
 @Pseudo
 public class MixinWorld implements WorldDuck {
 

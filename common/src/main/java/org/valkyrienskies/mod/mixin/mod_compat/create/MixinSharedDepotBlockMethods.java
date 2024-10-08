@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
-@Mixin(SharedDepotBlockMethods.class)
+@Mixin(value = SharedDepotBlockMethods.class,remap = false)
 public abstract class MixinSharedDepotBlockMethods {
     @Redirect(method = "onLanded", at = @At(
             value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;blockPosition()Lnet/minecraft/core/BlockPos;"

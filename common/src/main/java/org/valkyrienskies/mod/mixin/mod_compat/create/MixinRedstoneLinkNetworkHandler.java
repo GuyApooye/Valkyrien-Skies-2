@@ -17,7 +17,7 @@ import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
-@Mixin(RedstoneLinkNetworkHandler.class)
+@Mixin(value = RedstoneLinkNetworkHandler.class,remap = false)
 public abstract class MixinRedstoneLinkNetworkHandler {
 
     @Unique

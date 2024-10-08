@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Outline.OutlineParams.class)
+@Mixin(value = Outline.OutlineParams.class,remap = false)
 public interface OutlineParamsAccessor {
     @Accessor("alpha")
     float getAlpha();

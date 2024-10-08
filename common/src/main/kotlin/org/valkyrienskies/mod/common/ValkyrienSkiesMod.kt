@@ -15,6 +15,7 @@ import org.valkyrienskies.mod.common.entity.ShipMountingEntity
 import org.valkyrienskies.mod.common.entity.VSPhysicsEntity
 import org.valkyrienskies.mod.common.networking.VSGamePackets
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
+import org.valkyrienskies.mod.common.world.ShipDimension
 
 object ValkyrienSkiesMod {
     const val MOD_ID = "valkyrienskies"

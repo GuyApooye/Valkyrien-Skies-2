@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(ChuteBlockEntity.class)
+@Mixin(value = ChuteBlockEntity.class,remap = false)
 public interface ChuteBlockEntityAccessor {
     @Accessor("bottomPullDistance")
     float getBottomPullDistance();

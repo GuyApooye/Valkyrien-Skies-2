@@ -25,7 +25,7 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 @Mixin(CrushingWheelControllerBlockEntity.class)
 public abstract class MixinCrushingWheelControllerTileEntity {
 
-    @Shadow
+    @Shadow(remap = false)
     public float crushingspeed;
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;"))

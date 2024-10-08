@@ -18,7 +18,7 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
         "com.simibubi.create.content.kinetics.simpleRelays.CogwheelBlockItem$DiagonalCogHelper",
         "com.simibubi.create.content.kinetics.simpleRelays.CogwheelBlockItem$IntegratedLargeCogHelper",
         "com.simibubi.create.content.kinetics.simpleRelays.CogwheelBlockItem$IntegratedSmallCogHelper"
-})
+},remap = false)
 public class MixinCogwheelBlockItem {
     @Redirect(method = "getOffset", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/BlockHitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 redirectGetLocation(BlockHitResult instance) {

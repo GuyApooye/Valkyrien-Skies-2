@@ -20,6 +20,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
+import org.valkyrienskies.mod.common.world.ShipDimension;
+import org.valkyrienskies.mod.common.world.ShipWorldRenderer;
 import org.valkyrienskies.mod.compat.SodiumCompat;
 import org.valkyrienskies.mod.compat.VSRenderer;
 import org.valkyrienskies.mod.mixin.ValkyrienCommonMixinConfigPlugin;
@@ -55,6 +57,7 @@ public abstract class MixinClientChunkCache implements ClientChunkCacheDuck {
         final Consumer<BlockEntityTagOutput> consumer, final CallbackInfoReturnable<LevelChunk> cir) {
         final ClientChunkCacheStorageAccessor clientChunkMapAccessor =
             ClientChunkCacheStorageAccessor.class.cast(storage);
+        final ClientLevel shipWorldLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
         if (!clientChunkMapAccessor.callInRange(x, z)) {
             if (VSGameUtilsKt.isChunkInShipyard(level, x, z)) {
                 final long chunkPosLong = ChunkPos.asLong(x, z);
@@ -65,12 +68,12 @@ public abstract class MixinClientChunkCache implements ClientChunkCacheDuck {
                     worldChunk = oldChunk;
                     oldChunk.replaceWithPacketData(buf, tag, consumer);
                 } else {
-                    worldChunk = new LevelChunk(this.level, new ChunkPos(x, z));
+                    worldChunk = new LevelChunk(shipWorldLevel, new ChunkPos(x, z));
                     worldChunk.replaceWithPacketData(buf, tag, consumer);
                     vs$shipChunks.put(chunkPosLong, worldChunk);
                 }
 
-                this.level.onChunkLoaded(new ChunkPos(x, z));
+                shipWorldLevel.onChunkLoaded(new ChunkPos(x, z));
                 SodiumCompat.onChunkAdded(x, z);
                 cir.setReturnValue(worldChunk);
             }

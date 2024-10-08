@@ -55,6 +55,11 @@ jar {
     exclude "net/optifine/**"
 }
 
+compileKotlin {
+    kotlinOptions.jvmTarget = '17'
+}
+
+
 publishing {
     publications {
         mavenCommon(MavenPublication) {

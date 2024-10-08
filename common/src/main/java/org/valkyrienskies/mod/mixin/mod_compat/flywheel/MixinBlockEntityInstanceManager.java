@@ -29,7 +29,7 @@ import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.mixinducks.MixinBlockEntityInstanceManagerDuck;
 
 @Pseudo
-@Mixin(value = BlockEntityInstanceManager.class)
+@Mixin(value = BlockEntityInstanceManager.class,remap = false)
 @ParametersAreNonnullByDefault
 public abstract class MixinBlockEntityInstanceManager extends InstanceManager<BlockEntity> implements
     MixinBlockEntityInstanceManagerDuck {

@@ -23,7 +23,7 @@ import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
-@Mixin(BeltMovementHandler.class)
+@Mixin(value = BeltMovementHandler.class, remap = false)
 public abstract class MixinBeltMovementHandler {
 
     @Unique

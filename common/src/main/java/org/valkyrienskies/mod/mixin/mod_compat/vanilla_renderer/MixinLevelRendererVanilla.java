@@ -14,21 +14,32 @@ import com.mojang.math.Vector3f;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.WeakHashMap;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LevelRenderer.RenderChunkInfo;
+import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3dc;
 import org.joml.primitives.AABBd;
@@ -45,10 +56,18 @@ import org.valkyrienskies.mod.common.VSClientGameUtils;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.hooks.VSGameEvents;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
+import org.valkyrienskies.mod.common.world.ShipDimension;
+import org.valkyrienskies.mod.common.world.ShipWorldRenderer;
 import org.valkyrienskies.mod.compat.VSRenderer;
 import org.valkyrienskies.mod.mixin.ValkyrienCommonMixinConfigPlugin;
+import org.valkyrienskies.mod.mixin.accessors.client.multiplayer.ClientLevelAccessor;
+import org.valkyrienskies.mod.mixin.accessors.client.render.LevelRendererAccessor;
 import org.valkyrienskies.mod.mixin.accessors.client.render.ViewAreaAccessor;
+import org.valkyrienskies.mod.mixin.accessors.client.multiplayer.ClientLevelDataAccessor;
+import org.valkyrienskies.mod.mixin.accessors.client.world.level.biome.BiomeManagerAccessor;
 import org.valkyrienskies.mod.mixin.mod_compat.optifine.RenderChunkInfoAccessorOptifine;
+import org.valkyrienskies.mod.mixinducks.client.MinecraftDuck;
+import org.valkyrienskies.mod.mixinducks.client.render.IVSViewAreaMethods;
 
 @Mixin(LevelRenderer.class)
 public abstract class MixinLevelRendererVanilla {
@@ -61,10 +80,14 @@ public abstract class MixinLevelRendererVanilla {
     private ObjectArrayList<RenderChunkInfo> renderChunksInFrustum;
     @Shadow
     private @Nullable ViewArea viewArea;
+    private @Nullable ViewArea shipWorldViewArea;
     @Shadow
     @Final
     private Minecraft minecraft;
 
+    @Shadow
+    @Final
+    private RenderBuffers renderBuffers;
     @Unique
     private ObjectList<RenderChunkInfo> renderChunksGeneratedByVanilla = new ObjectArrayList<>();
 
@@ -97,12 +120,10 @@ public abstract class MixinLevelRendererVanilla {
     )
     private boolean needsFrustumUpdate(final boolean needsFrustumUpdate) {
         final Player player = minecraft.player;
-
         // force frustum update if default behaviour says to OR if the player is mounted to a ship
         return needsFrustumUpdate ||
             (player != null && VSGameUtilsKt.getShipMountedTo(player) != null);
     }
-
     /**
      * Add ship render chunks to [renderChunks]
      */
@@ -118,6 +139,13 @@ public abstract class MixinLevelRendererVanilla {
         renderChunksGeneratedByVanilla = new ObjectArrayList<>(renderChunksInFrustum);
 
         final BlockPos.MutableBlockPos tempPos = new BlockPos.MutableBlockPos();
+
+        if (ShipDimension.INSTANCE.getShipDimensionLevel() == null) {
+            ShipWorldRenderer.INSTANCE.softInit();
+        }
+        final ClientLevel shipLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
+        final LevelRenderer shipLevelRenderer = ShipDimension.INSTANCE.getShipDimensionRenderer();
+
         final ViewAreaAccessor chunkStorageAccessor = (ViewAreaAccessor) viewArea;
         for (final ClientShip shipObject : VSGameUtilsKt.getShipObjectWorld(level).getLoadedShips()) {
             // Don't bother rendering the ship if its AABB isn't visible to the frustum
@@ -127,13 +155,13 @@ public abstract class MixinLevelRendererVanilla {
 
             shipObject.getActiveChunksSet().forEach((x, z) -> {
                 final LevelChunk levelChunk = level.getChunk(x, z);
-                for (int y = level.getMinSection(); y < level.getMaxSection(); y++) {
+                for (int y = level.getMinSection(); y < levelChunk.getMaxSection(); y++) {
                     tempPos.set(x << 4, y << 4, z << 4);
                     final ChunkRenderDispatcher.RenderChunk renderChunk =
                         chunkStorageAccessor.callGetRenderChunkAt(tempPos);
                     if (renderChunk != null) {
                         // If the chunk section is empty then skip it
-                        final LevelChunkSection levelChunkSection = levelChunk.getSection(y - level.getMinSection());
+                        final LevelChunkSection levelChunkSection = levelChunk.getSection(y - levelChunk.getMinSection());
                         if (levelChunkSection.hasOnlyAir()) {
                             continue;
                         }
@@ -169,17 +197,19 @@ public abstract class MixinLevelRendererVanilla {
             value = "INVOKE",
             target = "Lit/unimi/dsi/fastutil/objects/ObjectArrayList;clear()V"
         )
+        ,remap = false
     )
     private void clearShipChunks(final CallbackInfo ci) {
         shipRenderChunks.forEach((ship, chunks) -> chunks.clear());
     }
 
     @WrapOperation(
+        method = "*",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/LevelRenderer;renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLcom/mojang/math/Matrix4f;)V"
-        ),
-        method = "*"
+        )
+        ,remap = false
     )
     private void redirectRenderChunkLayer(final LevelRenderer receiver,
         final RenderType renderType, final PoseStack poseStack, final double camX, final double camY, final double camZ,

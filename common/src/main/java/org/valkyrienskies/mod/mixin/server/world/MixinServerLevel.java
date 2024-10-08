@@ -54,6 +54,7 @@ import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.block.WingBlock;
 import org.valkyrienskies.mod.common.util.VSServerLevel;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
+import org.valkyrienskies.mod.common.world.ShipDimension;
 import org.valkyrienskies.mod.mixin.accessors.server.level.ChunkMapAccessor;
 import org.valkyrienskies.mod.mixin.accessors.server.level.DistanceManagerAccessor;
 
@@ -154,7 +155,7 @@ public abstract class MixinServerLevel implements IShipObjectWorldServerProvider
                     voxelShapeUpdates.add(voxelShapeUpdate);
 
                     // region Detect wings
-                    final ServerLevel thisAsLevel = ServerLevel.class.cast(this);
+                    final ServerLevel thisAsLevel = getServer().getLevel(ShipDimension.getShipDimensionKey());
                     final LoadedServerShip
                         ship = VSGameUtilsKt.getShipObjectManagingPos(thisAsLevel, chunkX, chunkZ);
                     if (ship != null) {

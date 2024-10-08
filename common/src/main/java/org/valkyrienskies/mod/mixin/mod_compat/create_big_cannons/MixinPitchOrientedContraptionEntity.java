@@ -21,7 +21,7 @@ import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 @Pseudo
-@Mixin(targets = "rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity")
+@Mixin(targets = "rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity",remap = false)
 public abstract class MixinPitchOrientedContraptionEntity extends OrientedContraptionEntity {
 
     @Shadow

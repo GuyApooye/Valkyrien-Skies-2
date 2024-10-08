@@ -3,6 +3,7 @@ package org.valkyrienskies.mod.common.assembly
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.Mth
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
@@ -12,6 +13,7 @@ import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.ticks.ScheduledTick
 import org.joml.Vector3d
 import org.joml.Vector3i
+import org.valkyrienskies.mod.common.world.ShipDimension
 
 private val AIR = Blocks.AIR.defaultBlockState()
 object AssemblyUtil {
@@ -49,7 +51,7 @@ object AssemblyUtil {
     }
 
     fun updateBlock(level: Level, fromPos: BlockPos, toPos: BlockPos, toState: BlockState) {
-
+        val shipLevel: ServerLevel = level.server?.getLevel(ShipDimension.shipDimensionKey)!!;
         // 75 = flag 1 (block update) & flag 2 (send to clients) + flag 8 (force rerenders)
         val flags = 11
 

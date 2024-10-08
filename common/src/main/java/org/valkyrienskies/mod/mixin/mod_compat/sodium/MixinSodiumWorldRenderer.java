@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.valkyrienskies.core.api.ships.ClientShip;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
-@Mixin(SodiumWorldRenderer.class)
+@Mixin(value = SodiumWorldRenderer.class,remap = false)
 public class MixinSodiumWorldRenderer {
 
     @Shadow

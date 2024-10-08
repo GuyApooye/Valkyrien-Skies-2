@@ -23,7 +23,7 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
         "com.simibubi.create.foundation.placement.PoleHelper",
         "com.simibubi.create.content.decoration.girder.GirderPlacementHelper",
         "com.simibubi.create.content.trains.display.FlapDisplayBlock$PlacementHelper"
-})
+}, remap = false)
 public class MixinMultiplePlacementHelpers {
 
     @Unique

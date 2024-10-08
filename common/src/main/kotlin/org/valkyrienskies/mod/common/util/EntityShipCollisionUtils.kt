@@ -15,10 +15,14 @@ import org.valkyrienskies.core.api.ships.Ship
 import org.valkyrienskies.core.apigame.collision.ConvexPolygonc
 import org.valkyrienskies.core.util.extend
 import org.valkyrienskies.mod.common.getShipsIntersecting
+import org.valkyrienskies.mod.common.hooks.CommonHooksImpl
 import org.valkyrienskies.mod.common.shipObjectWorld
 import org.valkyrienskies.mod.common.vsCore
+import org.valkyrienskies.mod.common.world.ShipDimension
+import org.valkyrienskies.mod.common.world.ShipWorldRenderer
 import org.valkyrienskies.mod.util.BugFixUtil
 import kotlin.math.max
+import kotlin.reflect.jvm.internal.impl.platform.PlatformUtilKt
 
 object EntityShipCollisionUtils {
 
@@ -26,6 +30,7 @@ object EntityShipCollisionUtils {
 
     @JvmStatic
     fun isCollidingWithUnloadedShips(entity: Entity): Boolean {
+
         val level = entity.level
 
         if (level is ServerLevel || (level.isClientSide && level is ClientLevel)) {
@@ -120,8 +125,12 @@ object EntityShipCollisionUtils {
                 // Box too large, skip it
                 continue
             }
+            val shipWorldLevel: Level
+            shipWorldLevel = if(vsCore.hooks.isPhysicalClient)
+                ShipDimension.shipDimensionLevel!!
+            else world.server!!.getLevel(ShipDimension.shipDimensionKey)!!
             val shipBlockCollisionStream =
-                world.getBlockCollisions(entity, entityBoundingBoxInShipCoordinates.toMinecraft())
+                shipWorldLevel.getBlockCollisions(entity, entityBoundingBoxInShipCoordinates.toMinecraft())
             shipBlockCollisionStream.forEach { voxelShape: VoxelShape ->
                 voxelShape.forAllBoxes { minX, minY, minZ, maxX, maxY, maxZ ->
                     val shipPolygon: ConvexPolygonc = vsCore.entityPolygonCollider.createPolygonFromAABB(

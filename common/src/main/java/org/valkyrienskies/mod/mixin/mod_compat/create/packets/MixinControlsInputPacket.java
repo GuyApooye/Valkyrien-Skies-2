@@ -24,6 +24,7 @@ public abstract class MixinControlsInputPacket {
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/phys/Vec3;closerThan(Lnet/minecraft/core/Position;D)Z"
             )
+        ,remap = false
     )
     private boolean redirectCloserThan(final Vec3 instance, final Position arg, final double d) {
         Vec3 newVec3 = instance;
@@ -40,6 +41,7 @@ public abstract class MixinControlsInputPacket {
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/level/ServerPlayer;getCommandSenderWorld()Lnet/minecraft/world/level/Level;"
             )
+        ,remap = false
     )
     private Level stealLevel(ServerPlayer player) {
         return (level = player.getCommandSenderWorld());

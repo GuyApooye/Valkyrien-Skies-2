@@ -17,7 +17,7 @@ import org.valkyrienskies.core.api.ships.ClientShip;
 import org.valkyrienskies.mod.common.VSClientGameUtils;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
-@Mixin(ContraptionRenderInfo.class)
+@Mixin(value = ContraptionRenderInfo.class,remap = false)
 public class MixinContraptionRenderInfo {
 
     @Shadow

@@ -3,6 +3,7 @@ package org.valkyrienskies.mod.mixin.mod_compat.vanilla_renderer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
@@ -19,6 +20,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
+import org.valkyrienskies.mod.common.world.ShipDimension;
+import org.valkyrienskies.mod.common.world.ShipWorldRenderer;
 import org.valkyrienskies.mod.mixinducks.client.render.IVSViewAreaMethods;
 
 /**
@@ -34,6 +37,8 @@ public class MixinViewAreaVanilla implements IVSViewAreaMethods {
     @Shadow
     protected int chunkGridSizeY;
 
+    @Shadow
+    protected int chunkGridSizeX;
     // Maps chunk position to an array of BuiltChunk, indexed by the y value.
     private final Long2ObjectMap<ChunkRenderDispatcher.RenderChunk[]> vs$shipRenderChunks =
         new Long2ObjectOpenHashMap<>();
@@ -56,6 +61,15 @@ public class MixinViewAreaVanilla implements IVSViewAreaMethods {
     @Inject(method = "setDirty", at = @At("HEAD"), cancellable = true)
     private void preScheduleRebuild(final int x, final int y, final int z, final boolean important,
         final CallbackInfo callbackInfo) {
+        ClientLevel shipLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
+        if(shipLevel == null) {
+            ShipWorldRenderer.INSTANCE.softInit();
+            shipLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
+        }
+
+
+
+
 
         final int yIndex = y - level.getMinSection();
 
@@ -120,6 +134,11 @@ public class MixinViewAreaVanilla implements IVSViewAreaMethods {
                 }
             }
         }
+    }
+
+    @Override
+    public ViewArea newWithShipDispatcher() {
+        return new ViewArea(vs$chunkBuilder,ShipDimension.INSTANCE.getShipDimensionLevel(),(chunkGridSizeX - 1)/2, ShipDimension.INSTANCE.getShipDimensionRenderer());
     }
 
     /**

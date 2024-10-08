@@ -12,7 +12,7 @@ import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
-@Mixin(SuperGlueRemovalPacket.class)
+@Mixin(value = SuperGlueRemovalPacket.class,remap = false)
 public abstract class MixinSuperGlueRemovalPacket {
     @Redirect(method = "lambda$handle$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))
     private double redirectPlayerDistanceToSqr(final ServerPlayer instance, final Vec3 vec3) {

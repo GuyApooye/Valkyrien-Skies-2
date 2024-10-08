@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
-@Mixin(ContraptionCollider.class)
+@Mixin(value = ContraptionCollider.class, remap = false)
 public abstract class MixinContraptionCollider {
     @Shadow
     static Vec3 collide(Vec3 p_20273_, Entity e) {

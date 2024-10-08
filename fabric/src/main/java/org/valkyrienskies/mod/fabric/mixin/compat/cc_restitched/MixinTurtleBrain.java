@@ -24,7 +24,7 @@ import org.valkyrienskies.mod.common.config.VSGameConfig;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 @Pseudo
-@Mixin(TurtleBrain.class)
+@Mixin(value = TurtleBrain.class,remap = false)
 public abstract class MixinTurtleBrain {
     @Shadow
     public abstract TileTurtle getOwner();

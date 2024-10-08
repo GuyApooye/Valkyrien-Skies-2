@@ -23,7 +23,7 @@ public abstract class MixinControlledContraptionEntity extends AbstractContrapti
     }
 
     //Region start - fix actors in the center of a bearing contraption not triggering correctly (vanilla create bug)
-    @Shadow
+    @Shadow(remap = false)
     protected float angleDelta;
 
     @Redirect(method = "shouldActorTrigger", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lcom/simibubi/create/content/contraptions/behaviour/MovementContext;motion:Lnet/minecraft/world/phys/Vec3;"))

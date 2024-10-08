@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.valkyrienskies.core.apigame.world.IPlayer;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.MinecraftPlayer;
+import org.valkyrienskies.mod.common.world.ShipDimension;
 
 @Mixin(ChunkMap.class)
 public abstract class MixinChunkMap {
@@ -31,6 +32,8 @@ public abstract class MixinChunkMap {
     @Shadow
     @Final
     private Supplier<DimensionDataStorage> overworldDataStorage;
+    private static List<Iterator<IPlayer>> shipChunkWatchers = new ArrayList<>();
+
 
     /**
      * Force the game to generate empty chunks in the shipyard.
@@ -80,7 +83,9 @@ public abstract class MixinChunkMap {
             VSGameUtilsKt.getShipObjectWorld(level)
                 .getIPlayersWatchingShipChunk(chunkPos.x, chunkPos.z, VSGameUtilsKt.getDimensionId(level));
 
-        if (!playersWatchingShipChunk.hasNext()) {
+        shipChunkWatchers.add(playersWatchingShipChunk);
+
+        if (!playersWatchingShipChunk.hasNext() || level != level.getServer().getLevel(ShipDimension.getShipDimensionKey())) {
             // No players watching this ship chunk, so we don't need to modify anything
             return;
         }
@@ -88,7 +93,7 @@ public abstract class MixinChunkMap {
         final List<ServerPlayer> oldReturnValue = cir.getReturnValue();
         final Set<ServerPlayer> watchingPlayers = new HashSet<>(oldReturnValue);
 
-        playersWatchingShipChunk.forEachRemaining(
+        shipChunkWatchers.iterator().forEachRemaining(i -> i.forEachRemaining(
             iPlayer -> {
                 final MinecraftPlayer minecraftPlayer = (MinecraftPlayer) iPlayer;
                 final ServerPlayer playerEntity =
@@ -97,7 +102,7 @@ public abstract class MixinChunkMap {
                     watchingPlayers.add(playerEntity);
                 }
             }
-        );
+        ));
 
         cir.setReturnValue(new ArrayList<>(watchingPlayers));
     }

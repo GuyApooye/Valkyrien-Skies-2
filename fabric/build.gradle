@@ -12,6 +12,11 @@ architectury {
     fabric()
 }
 
+compileKotlin {
+    kotlinOptions.jvmTarget = '17'
+}
+
+
 configurations {
     common
     shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
@@ -40,7 +45,7 @@ dependencies {
     include(modImplementation("net.fabricmc:fabric-language-kotlin:1.10.10+kotlin.1.9.10"))
     include(modImplementation("me.shedaniel.cloth:cloth-config-fabric:6.3.81"))
 
-    modImplementation("curse.maven:sodium-394468:3669187")
+    modCompileOnly("curse.maven:sodium-394468:3669187")
     modImplementation("com.terraformersmc:modmenu:3.2.3")
 
     // Depend on the fabric API

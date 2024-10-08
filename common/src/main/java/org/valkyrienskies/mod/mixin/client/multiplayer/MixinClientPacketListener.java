@@ -2,21 +2,32 @@ package org.valkyrienskies.mod.mixin.client.multiplayer;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientLevel.ClientLevelData;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.valkyrienskies.mod.common.IShipObjectWorldClientCreator;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
+import org.valkyrienskies.mod.common.world.ShipDimension;
 
 @Mixin(ClientPacketListener.class)
 public class MixinClientPacketListener {
@@ -34,6 +45,18 @@ public class MixinClientPacketListener {
     )
     private void beforeHandleLogin(final ClientboundLoginPacket packet, final CallbackInfo ci) {
         ((IShipObjectWorldClientCreator) Minecraft.getInstance()).createShipObjectWorldClient();
+
+    }
+    @Redirect(method = "handleRespawn", at = @At(value = "NEW",
+        target = "(Lnet/minecraft/client/multiplayer/ClientPacketListener;Lnet/minecraft/client/multiplayer/ClientLevel$ClientLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/Holder;IILjava/util/function/Supplier;Lnet/minecraft/client/renderer/LevelRenderer;ZJ)Lnet/minecraft/client/multiplayer/ClientLevel;"))
+    private ClientLevel afterHandleLogin(ClientPacketListener arg, ClientLevelData arg2, ResourceKey<Level> arg3, Holder<DimensionType> arg4,
+        int i, int j, Supplier<ProfilerFiller> supplier, LevelRenderer arg5, boolean bl, long l) {
+//        ShipWorldRenderer.INSTANCE.init();
+        Holder<DimensionType> type = arg.registryAccess().registryOrThrow(Registry.DIMENSION_TYPE_REGISTRY)
+            .getHolderOrThrow(ShipDimension.getShipDimensionTypeKey());
+        ShipDimension.INSTANCE.setShipDimensionLevel(new ClientLevel(arg,arg2,ShipDimension.getShipDimensionKey(),type,i,j,supplier,arg5,bl,l));
+
+        return new ClientLevel(arg,arg2,arg3,arg4,i,j,supplier,arg5,bl,l);
     }
 
     /**

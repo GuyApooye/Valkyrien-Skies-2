@@ -10,10 +10,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,6 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.valkyrienskies.core.api.ships.ClientShip;
 import org.valkyrienskies.core.api.ships.properties.ShipTransform;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
+import org.valkyrienskies.mod.common.world.ShipDimension;
 import org.valkyrienskies.mod.mixin.accessors.client.render.OverlayVertexConsumerAccessor;
 
 @Mixin(LevelRenderer.class)
@@ -39,6 +43,9 @@ public abstract class MixinLevelRenderer {
 
     @Shadow
     private ClientLevel level;
+    @Shadow
+    @Final
+    private Minecraft minecraft;
 
     @Shadow
     private static void renderShape(final PoseStack matrixStack, final VertexConsumer vertexConsumer,
@@ -46,6 +53,10 @@ public abstract class MixinLevelRenderer {
         final float blue, final float alpha) {
         throw new AssertionError();
     }
+
+    @Shadow
+    @Final
+    private RenderBuffers renderBuffers;
 
     /**
      * @reason This mixin forces the game to always render block damage.
@@ -70,11 +81,12 @@ public abstract class MixinLevelRenderer {
         final BlockState blockState, final CallbackInfo ci) {
         ci.cancel();
         final ClientShip ship = VSGameUtilsKt.getShipObjectManagingPos(level, blockPos);
+        final ClientLevel shipWorldLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
         if (ship != null) {
             matrixStack.pushPose();
             transformRenderWithShip(ship.getRenderTransform(), matrixStack, blockPos, camX, camY, camZ);
             renderShape(matrixStack, vertexConsumer,
-                blockState.getShape(this.level, blockPos, CollisionContext.of(entity)),
+                blockState.getShape(shipWorldLevel, blockPos, CollisionContext.of(entity)),
                 0d, 0d, 0d, 0.0F, 0.0F, 0.0F, 0.4F);
             matrixStack.popPose();
         } else {

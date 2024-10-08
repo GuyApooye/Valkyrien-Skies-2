@@ -32,7 +32,7 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import org.valkyrienskies.mod.common.world.RaycastUtilsKt;
 import org.valkyrienskies.mod.mixinducks.mod_compat.create.IExtendedAirCurrentSource;
 
-@Mixin(AirCurrent.class)
+@Mixin(value = AirCurrent.class,remap = false)
 public abstract class MixinAirCurrent {
 
     @Unique

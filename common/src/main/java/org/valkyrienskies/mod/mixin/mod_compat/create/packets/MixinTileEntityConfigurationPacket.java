@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
-@Mixin(BlockEntityConfigurationPacket.class)
+@Mixin(value = BlockEntityConfigurationPacket.class)
 public abstract class MixinTileEntityConfigurationPacket {
     @Unique
     private Level _clockworkLevel;
@@ -23,6 +23,7 @@ public abstract class MixinTileEntityConfigurationPacket {
                     value = "INVOKE",
                     target = "Lnet/minecraft/core/BlockPos;closerThan(Lnet/minecraft/core/Vec3i;D)Z"
             )
+        ,remap = false
     )
     private boolean redirectCloserThan(final BlockPos instance, final Vec3i vec3i, final double v) {
         BlockPos blockPos = instance;
@@ -40,6 +41,7 @@ public abstract class MixinTileEntityConfigurationPacket {
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/Level;isLoaded(Lnet/minecraft/core/BlockPos;)Z"
             )
+        ,remap = false
     )
     private boolean injectCaptureLevel(final Level instance, final BlockPos pos) {
         this._clockworkLevel = instance;

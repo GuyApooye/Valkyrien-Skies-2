@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(DeployerMovementBehaviour.class)
 public interface IMixinDeployerMovementBehaviour {
-    @Invoker("tryGrabbingItem")
+    @Invoker(value = "tryGrabbingItem",remap = false)
     void invokeTryGrabbingItem(MovementContext movementContext);
 }

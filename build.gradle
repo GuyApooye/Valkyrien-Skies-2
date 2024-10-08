@@ -20,10 +20,6 @@ plugins {
 if (project.hasProperty("CustomReleaseVersion")) {
     // Remove release/ from the version if present
     version = project.property("CustomReleaseVersion").replaceFirst("^release/", "")
-} else {
-    String gitRevision = "git rev-parse HEAD".execute().text.trim()
-
-    version = mod_version + "+" + gitRevision.substring(0, 10)
 }
 
 architectury {

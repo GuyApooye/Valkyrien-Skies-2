@@ -42,6 +42,7 @@ public abstract class MixinPersistentEntitySectionManager implements OfLevel {
             target = "Lit/unimi/dsi/fastutil/longs/LongSet;removeIf(Ljava/uti l/function/LongPredicate;)Z",
             value = "INVOKE"
         )
+        ,remap = false
     )
     private LongPredicate processUnloads_catchException(
         final LongPredicate par1

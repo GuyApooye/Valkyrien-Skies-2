@@ -17,7 +17,7 @@ import org.valkyrienskies.mod.common.config.VSGameConfig;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 @Pseudo
-@Mixin(ClaimedChunkManager.class)
+@Mixin(value = ClaimedChunkManager.class,remap = false)
 public abstract class MixinClaimedChunkManager {
     @Unique
     private Entity entity = null;

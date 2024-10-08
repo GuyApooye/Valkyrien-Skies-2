@@ -166,23 +166,23 @@ public abstract class MixinAbstractContraptionEntity extends Entity implements M
     @Unique
     private boolean vs$forceStall = false;
 
-    @Shadow
+    @Shadow(remap = false)
     private boolean skipActorStop;
 
     @Shadow
     @Final
     private static EntityDataAccessor<Boolean> STALLED;
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract boolean isStalled();
 
     @Shadow
     protected abstract boolean shouldActorTrigger(MovementContext context, StructureBlockInfo blockInfo, MovementBehaviour actor, Vec3 actorPosition, BlockPos gridPosition);
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract boolean isActorActive(MovementContext context, MovementBehaviour actor);
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract void onContraptionStalled();
 
     @Inject(method = "tickActors", at = @At("HEAD"), cancellable = true, remap = false)

@@ -30,7 +30,7 @@ object ChunkManagement {
 
             val chunkPos = ChunkPos(chunkWatchTask.chunkX, chunkWatchTask.chunkZ)
 
-            val level = server.getLevelFromDimensionId(chunkWatchTask.dimensionId)!!
+            val level = server.getLevelFromDimensionId(ShipDimension.shipDimensionId)!!
             level.chunkSource.updateChunkForced(chunkPos, true)
 
             level.server.executeIf({ level.isTickingChunk(chunkPos) }) {

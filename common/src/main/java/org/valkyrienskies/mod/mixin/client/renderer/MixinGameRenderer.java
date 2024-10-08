@@ -2,18 +2,29 @@ package org.valkyrienskies.mod.mixin.client.renderer;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
+import java.util.Map;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
@@ -37,6 +48,11 @@ import org.valkyrienskies.mod.common.util.EntityDraggingInformation;
 import org.valkyrienskies.mod.common.util.IEntityDraggingInformationProvider;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import org.valkyrienskies.mod.common.world.RaycastUtilsKt;
+import org.valkyrienskies.mod.common.world.ShipDimension;
+import org.valkyrienskies.mod.common.world.ShipWorldRenderer;
+import org.valkyrienskies.mod.mixin.accessors.client.multiplayer.ClientLevelAccessor;
+import org.valkyrienskies.mod.mixin.accessors.client.multiplayer.ClientLevelDataAccessor;
+import org.valkyrienskies.mod.mixin.accessors.client.world.level.biome.BiomeManagerAccessor;
 import org.valkyrienskies.mod.mixinducks.client.MinecraftDuck;
 
 @Mixin(GameRenderer.class)
@@ -56,6 +72,14 @@ public abstract class MixinGameRenderer {
     @Shadow
     public abstract Matrix4f getProjectionMatrix(double d);
 
+    @Shadow
+    @Final
+    private RenderBuffers renderBuffers;
+
+    @Shadow
+    @Final
+    private LightTexture lightTexture;
+
     /**
      * {@link Entity#pick(double, float, boolean)} except the hit pos is not transformed
      */
@@ -64,6 +88,7 @@ public abstract class MixinGameRenderer {
         final Entity entity, final double maxDistance, final float tickDelta, final boolean includeFluids) {
         final Vec3 vec3d = entity.getEyePosition(tickDelta);
         final Vec3 vec3d2 = entity.getViewVector(tickDelta);
+        final ClientLevel shipWorldLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
         final Vec3 vec3d3 = vec3d.add(vec3d2.x * maxDistance, vec3d2.y * maxDistance, vec3d2.z * maxDistance);
         return RaycastUtilsKt.clipIncludeShips(
             entity.level,
@@ -111,6 +136,11 @@ public abstract class MixinGameRenderer {
             instance.y,
             instance.z
         );
+    }
+    @Inject(method = "resize", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;resize(II)V"))
+    private void resizeShipWorldRenderer(int i, int j, CallbackInfo ci) {
+        LevelRenderer shipWorldRenderer = ShipDimension.INSTANCE.getShipDimensionRenderer();
+        if (shipWorldRenderer != null) shipWorldRenderer.resize(i,j);
     }
 
     @Inject(method = "render", at = @At("HEAD"))
@@ -203,6 +233,22 @@ public abstract class MixinGameRenderer {
                 }
             }
         }
+    }
+
+    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;prepareCullFrustum(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/phys/Vec3;Lcom/mojang/math/Matrix4f;)V"))
+    private void renderShipLevelPrepareFrustum(LevelRenderer instance, PoseStack matrix4f, Vec3 d0, Matrix4f d1,
+        Operation<Void> original) {
+        if (ShipDimension.INSTANCE.getShipDimensionRenderer() == null) {
+            ShipWorldRenderer.INSTANCE.softInit();
+        }
+        ShipDimension.INSTANCE.getShipDimensionRenderer().prepareCullFrustum(matrix4f,d0,d1);
+        original.call(instance,matrix4f,d0,d1);
+    }
+    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lcom/mojang/math/Matrix4f;)V"))
+    private void renderShipLevel(LevelRenderer instance, PoseStack outlinebuffersource, float i, long j, boolean k,
+        Camera l, GameRenderer i1, LightTexture multibuffersource, Matrix4f multibuffersource1, Operation<Void> original) {
+        ShipDimension.INSTANCE.getShipDimensionRenderer().renderLevel(outlinebuffersource,i,j,k,l,i1,multibuffersource,multibuffersource1);
+        original.call(instance,outlinebuffersource,i,j,k,l,i1,multibuffersource,multibuffersource1);
     }
 
     @Inject(method = "render", at = @At("TAIL"))

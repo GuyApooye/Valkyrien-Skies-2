@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.mixinducks.mod_compat.bluemap.WorldDuck;
 
-@Mixin(BmMap.class)
+@Mixin(value = BmMap.class,remap = false)
 @Pseudo
 public class MixinBmMap {
     @Shadow

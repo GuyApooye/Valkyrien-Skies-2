@@ -8,6 +8,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -17,7 +18,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,8 +31,10 @@ import org.valkyrienskies.core.apigame.world.VSPipeline;
 import org.valkyrienskies.mod.common.IShipObjectWorldClientCreator;
 import org.valkyrienskies.mod.common.IShipObjectWorldClientProvider;
 import org.valkyrienskies.mod.common.IShipObjectWorldServerProvider;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
 import org.valkyrienskies.mod.common.util.EntityDragger;
+import org.valkyrienskies.mod.common.world.ShipDimension;
 import org.valkyrienskies.mod.mixinducks.client.MinecraftDuck;
 
 @Mixin(Minecraft.class)
@@ -64,6 +69,11 @@ public abstract class MixinMinecraft
         return originalCrosshairTarget;
     }
 
+    @Override
+    public void setLevelRenderer(final LevelRenderer renderer) {
+        levelRenderer = renderer;
+    }
+
     @Unique
     private ClientShipWorldCore shipObjectWorld = null;
 
@@ -78,7 +88,10 @@ public abstract class MixinMinecraft
         final LocalPlayer localPlayer, final ClientLevel clientLevel, final InteractionHand interactionHand,
         final BlockHitResult blockHitResult, final Operation<InteractionResult> useItemOn) {
 
-        return useItemOn.call(instance, localPlayer, clientLevel, interactionHand,
+        ClientLevel useLevel = clientLevel;
+        if (VSGameUtilsKt.isBlockInShipyard(clientLevel,blockHitResult.getBlockPos())) useLevel = ShipDimension.INSTANCE.getShipDimensionLevel();
+
+        return useItemOn.call(instance, localPlayer, useLevel, interactionHand,
             this.originalCrosshairTarget);
     }
 
@@ -102,6 +115,11 @@ public abstract class MixinMinecraft
 
     @Shadow
     public abstract ClientPacketListener getConnection();
+
+    @Mutable
+    @Shadow
+    @Final
+    public LevelRenderer levelRenderer;
 
     @Inject(
         method = "tick",

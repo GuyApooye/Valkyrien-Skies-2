@@ -15,7 +15,7 @@ import org.valkyrienskies.mod.mixinducks.mod_compat.create.IMixinControlledContr
 @Mixin(ControlledContraptionEntity.class)
 public abstract class MixinControlledContraptionEntity extends AbstractContraptionEntity implements
     IMixinControlledContraptionEntity {
-    @Shadow protected abstract IControlContraption getController();
+    @Shadow(remap = false) protected abstract IControlContraption getController();
 
     public MixinControlledContraptionEntity(EntityType<?> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);

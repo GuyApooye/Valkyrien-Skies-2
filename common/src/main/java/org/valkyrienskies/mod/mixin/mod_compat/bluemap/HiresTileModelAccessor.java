@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(HiresTileModel.class)
+@Mixin(value = HiresTileModel.class,remap = false)
 @Pseudo
 public interface HiresTileModelAccessor {
 

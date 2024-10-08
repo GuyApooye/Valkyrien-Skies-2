@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 @Pseudo
-@Mixin(ReachEntityAttributes.class)
+@Mixin(value = ReachEntityAttributes.class,remap = false)
 public class MixinReachEntityAttributes {
     @Shadow
     public static double getReachDistance(final LivingEntity entity, final double baseReachDistance) {
